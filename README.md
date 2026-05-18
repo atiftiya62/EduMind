@@ -1,0 +1,2 @@
+# EduMind
+Educational website
