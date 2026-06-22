@@ -1,65 +1,50 @@
-const GEMINI_API_KEY = 'AIzaSyBagFB9YKZfy7a8S-s3TIKsgJyQSK3Yojks'; // Add your Gemini API key here
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-latest:generateContent?key=`;
+const GROQ_API_KEY = "";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-// Async function to call Gemini AI
 async function callAI(prompt) {
   try {
-    const response = await fetch(`${GEMINI_URL} {
-      method: 'POST',
+    const response = await fetch("https://corsproxy.io/?url=" + GROQ_URL, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + GROQ_API_KEY,
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }]
-      })
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: String(prompt) }],
+        temperature: 1,
+        max_tokens: 1024,
+      }),
     });
-    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const err = await response.json();
+      return "Error: " + (err.error?.message || "Unknown error");
     }
-    
     const data = await response.json();
-    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-      return data.candidates[0].content.parts[0].text;
-    }
-    return 'No response from AI.';
+    return data.choices[0].message.content;
   } catch (error) {
-    console.error('AI call failed:', error);
-    return 'Error: AI request failed. Check API key and network.';
+    return "Error: Please try again.";
   }
 }
 
-// Function to show specific page and update active nav
 function showPage(id) {
-  // Hide all pages
-  const pages = document.querySelectorAll('.page');
-  pages.forEach(page => {
-    page.style.display = 'none';
+  document.querySelectorAll(".page").forEach((p) => {
+    p.style.display = "none";
   });
-  
-  // Show target page
-  const targetPage = document.getElementById(id);
-  if (targetPage) {
-    targetPage.style.display = 'block';
-  }
-  
-  // Update active nav link
-  const links = document.querySelectorAll('.sidebar li a');
-  links.forEach(link => {
-    link.classList.remove('active');
+  document.querySelectorAll(".nav-link").forEach((n) => {
+    n.classList.remove("active");
   });
-  
-  const activeLink = document.querySelector(`a[href="#${id}"]`);
-  if (activeLink) {
-    activeLink.classList.add('active');
-  }
+  const target = document.getElementById(id);
+  if (target) target.style.display = "block";
 }
 
-// Window onload - default to learn page
-window.addEventListener('load', () => {
-  showPage('learn');
+window.addEventListener("load", () => {
+  showPage("home");
+  renderLearnPage();
+  renderNotesPage();
+  renderDiagramPage();
+  renderFlashcardPage();
+  renderPomodoroPage();
+  renderProgressPage();
+  renderQuizPage();
 });
